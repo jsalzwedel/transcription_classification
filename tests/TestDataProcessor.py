@@ -50,13 +50,13 @@ class TestGetEmbeddingsForTranscriptionNotes(TestCase):
         with patch('sys.stdout', new=StringIO()):
             processor = DataProcessor()
             processor.df_raw = self._simple_df
-            df = processor.get_embeddings_for_transcription_notes()
-            self.assertIn('embedding', df.columns)
+            processor.get_embeddings_for_transcription_notes()
+            self.assertIn('embedding', processor.df_processed.columns)
 
 
 class TestOutputCleanData(TestCase):
     """
-    Test the output_clean_data function.
+    Test the output_processed_data function.
     """
 
     def setUp(self):
@@ -65,13 +65,13 @@ class TestOutputCleanData(TestCase):
         self.processor._data_path = Path('data/mock_data.xlsx')
         self.processor.df_clean = pd.DataFrame({'foo': [1, 2, 3]})
 
-    def test_output_clean_data(self):
+    def test_output_processed_data(self):
         """
-        Test that when processor.output_clean_data() is called, it writes a clean data file to the same folder as the
+        Test that when processor.output_processed_data() is called, it writes a clean data file to the same folder as the
         input data file.
         """
-        # Call the output_clean_data method
-        self.processor.output_clean_data()
+        # Call the output_processed_data method
+        self.processor.output_processed_data()
 
         # Verify that the clean data file has been saved in the correct location
         expected_output_path = Path('data/mock_data_clean.xlsx')

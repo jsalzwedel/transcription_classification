@@ -32,6 +32,7 @@ class DataProcessor:
             self.data_path = data_path
         self._df_raw = None
         self._df_clean = None
+        self._df_processed = None
         if self.data_path:
             # Validate the data path and read in the data. The df_raw setter also takes care of calling the clean_data
             # method to update self._df_clean.
@@ -89,7 +90,7 @@ class DataProcessor:
 
         """
         logger.info('Creating text embeddings for the transcription notes.')
-        df = self.df_clean
+        df = self.df_clean.copy()
         config = configparser.ConfigParser()
         config.read('config.ini')
         openai.api_key = config.get('Credentials', 'api_key')
@@ -122,7 +123,7 @@ class DataProcessor:
         for idx, row in tqdm(df.iterrows(), total=df.shape[0], desc='Processing rows'):
             df.at[idx, 'embedding'] = get_embedding(row['transcription_notes'], engine=embedding_model)
 
-        return df
+        self.df_processed = df
 
     @property
     def data_path(self):
@@ -187,13 +188,24 @@ class DataProcessor:
         else:
             logger.error(f'Attempted to set df_clean to {value}. df_clean must be a pandas DataFrame.')
 
-    def output_clean_data(self):
+    @property
+    def df_processed(self):
+        return self._df_processed
+
+    @df_processed.setter
+    def df_processed(self, value):
+        if isinstance(value, pd.DataFrame):
+            self._df_processed = value
+        else:
+            logger.error(f'Attempted to set df_processed to {value}. df_processed must be a pandas DataFrame.')
+
+    def output_processed_data(self):
         # Save the clean data alongside the raw data file in case someone wants to look at it.
         directory = self._data_path.parent
         filename_stem = self._data_path.stem
         output_path = Path(directory, f'{filename_stem}_clean.xlsx')
         logger.info('Saving processed data to %s' % str(output_path))
-        self.df_clean.to_excel(output_path, index=False)
+        self.df_processed.to_excel(output_path, index=False)
 
     @staticmethod
     def process_data(raw_data_filepath):
@@ -212,5 +224,5 @@ class DataProcessor:
         logger.info('Processing raw data.')
         data_processor = DataProcessor(raw_data_filepath)
         data_processor.get_embeddings_for_transcription_notes()
-        data_processor.output_clean_data()
+        data_processor.output_processed_data()
         return data_processor
