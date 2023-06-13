@@ -23,10 +23,16 @@ class DataProcessor:
         Args:
             data_path
         """
-        self._data_path = data_path
+
+        # Path to where the input data is stored. # User doesn't have to supply a data path during DataProcessor
+        # creation. They may choose to do so at a later time.
+        self._data_path = None
+        # If they do supply a path, make sure it is valid.
+        if data_path:
+            self.data_path = data_path
         self._df_raw = None
         self._df_clean = None
-        if data_path:
+        if self.data_path:
             # Validate the data path and read in the data. The df_raw setter also takes care of calling the clean_data
             # method to update self._df_clean.
             self.df_raw = self.read_data(data_path)
@@ -44,15 +50,6 @@ class DataProcessor:
             df
         """
         logger.info('Reading data.')
-        # First, make sure that we've been provided a valid path to a file.
-        if not data_path or not Path(data_path).exists():
-            logger.error('Data file could not be found at %s. Exiting.' % data_path)
-            sys.exit(-1)
-
-        data_path = Path(data_path)
-        if not any([data_path.suffix == extension for extension in ['.xlsx', '.csv']]):
-            logger.error('File "%s" is not valid. Please provide a csv or xlsx.' % data_path)
-            sys.exit(-1)
 
         if data_path.suffix == '.csv':
             df = pd.read_csv(data_path)
@@ -127,6 +124,40 @@ class DataProcessor:
             df.at[idx, 'embedding'] = get_embedding(row['transcription_notes'], engine=embedding_model)
 
         return df
+
+    @property
+    def data_path(self):
+        return self._data_path
+
+    @data_path.setter
+    def data_path(self, value):
+        """
+        Set data_path after validating that it is a csv/xlsx file.
+        """
+        if self.validate_data_path(value):
+            self._data_path = value
+        else:
+            logger.error('Setting data_path to None.')
+
+    @staticmethod
+    def validate_data_path(data_path):
+        """
+        Validate that there is a csv/xlsx at the supplied path.
+        Args:
+            data_path (str): Absolute or relative path to a csv/xlsx.
+
+        Returns:
+            Bool: Whether the path points to a valid file.
+        """
+        if not data_path or not Path(data_path).exists():
+            logger.error('Data file could not be found at %s.' % data_path)
+            return False
+
+        data_path = Path(data_path)
+        if not any([data_path.suffix == extension for extension in ['.xlsx', '.csv']]):
+            logger.error('File "%s" is not valid. Please provide a csv or xlsx.' % data_path)
+            return False
+        return True
 
     @property
     def df_raw(self):
