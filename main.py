@@ -24,7 +24,7 @@ if __name__ == '__main__':
                        ' API to get word embeddings for all the transcription_notes.'
                        f'{linesep}'
                        + Fore.GREEN +
-                       'python main.py --process "data/mtsamples_transcription_data.xlsx"'
+                       'python main.py --filepath_to_raw_data "data/mtsamples_transcription_data.xlsx"'
                        + Fore.RESET + f'{linesep}{linesep}'
                        )
 

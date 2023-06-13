@@ -35,7 +35,7 @@ class DataProcessor:
         if self.data_path:
             # Validate the data path and read in the data. The df_raw setter also takes care of calling the clean_data
             # method to update self._df_clean.
-            self.df_raw = self.read_data(data_path)
+            self.df_raw = self.read_data(self.data_path)
 
 
     @staticmethod
@@ -44,7 +44,7 @@ class DataProcessor:
         Takes a path to a data file (csv or xlsx), reads in that data as a data frame, then returns the
         data.
         Args:
-            data_path (str):
+            data_path (Path):
 
         Returns:
             df
@@ -135,7 +135,7 @@ class DataProcessor:
         Set data_path after validating that it is a csv/xlsx file.
         """
         if self.validate_data_path(value):
-            self._data_path = value
+            self._data_path = Path(value)
         else:
             logger.error('Setting data_path to None.')
 
