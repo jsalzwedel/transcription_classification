@@ -37,7 +37,6 @@ class DataProcessor:
             # method to update self._df_clean.
             self.df_raw = self.read_data(self.data_path)
 
-
     @staticmethod
     def read_data(data_path):
         """

@@ -7,6 +7,21 @@ from os import linesep
 from model_trainer import ModelTrainer
 
 logger = logging.getLogger()
+# Set the logging level to INFO to that the logger pays attention to INFO-level messages and above.
+logger.setLevel(logging.INFO)
+
+# Create a console handler and set its level to INFO. This will make INFO-level messages and above be displayed
+# in the terminal.
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+
+# Create a formatter and add it to the console handler. This formatter shows the file and function names where the
+# logging message is called.
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(funcName)s - %(message)s')
+console_handler.setFormatter(formatter)
+
+# Add the console handler to the logger
+logger.addHandler(console_handler)
 
 
 if __name__ == '__main__':
