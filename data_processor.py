@@ -85,9 +85,14 @@ class DataProcessor:
 
     def get_embeddings_for_transcription_notes(self):
         """
+        Create an embedding column that contains text embeddings (vector representation of the text) for each
+        transcription_notes. We use the OpenAI Ada-2 API to get the embeddings. Before hitting the API, count how many
+        OpenAI tokens the data set corresponds to, then use that to estimate the cost of getting embeddings. Ask the
+        user if the estimated cost is acceptable. If it is, get the embeddings. If not, exit early.
 
+        FYI: This takes about 20 minutes to run on my personal laptop over the mtsamples data.
         Returns:
-
+            Nothing (modifies the df_processed attribute)
         """
         logger.info('Creating text embeddings for the transcription notes.')
         df = self.df_clean.copy()
