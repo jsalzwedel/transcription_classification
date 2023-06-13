@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 
 from colorama import Fore
 from data_processor import DataProcessor
@@ -41,6 +42,13 @@ if __name__ == '__main__':
                        + Fore.GREEN +
                        'python main.py --filepath_to_raw_data "data/mtsamples_transcription_data.xlsx"'
                        + Fore.RESET + f'{linesep}{linesep}'
+                       'The following command will run the model trainer over existing clean data'
+                       ' API to get word embeddings for all the transcription_notes.'
+                       f'{linesep}'
+                       + Fore.GREEN +
+                       'python main.py --filepath_to_processed_data "data/mtsamples_transcription_data_clean.xlsx"'
+                       ' --train_model'
+                       + Fore.RESET + f'{linesep}{linesep}'
                        )
 
     # Use RawDescriptionHelpFormatter to disable the automatic word wrapping and whitespace manipulation that argparser
@@ -62,16 +70,18 @@ if __name__ == '__main__':
                         default=None)
 
     parser.add_argument('--train_model',
-                        type=bool,
+                        action='store_true',
                         help='Set to True if you want to train a model using the processed data. This must be used in'
-                             ' conjunction with either --filepath_to_raw_data or --filepath_to_processed_data.',
-                        default=False)
+                             ' conjunction with either --filepath_to_raw_data or --filepath_to_processed_data.')
 
     options = parser.parse_args()
+    data_processor = None
     if options.filepath_to_raw_data:
         data_processor = DataProcessor.process_data(options.filepath_to_raw_data)
 
     if options.filepath_to_processed_data:
+        if not DataProcessor.validate_data_path(options.filepath_to_processed_data):
+            sys.exit(-1)
         # No need to clean and process raw data.
         data_processor = DataProcessor()
         data_processor.data_path = options.filepath_to_processed_data
@@ -79,7 +89,11 @@ if __name__ == '__main__':
             data_processor.df_clean = data_processor.read_data(data_processor.data_path)
 
     if options.train_model:
+        if not data_processor:
+            logger.error('A data processor is required for model training. Please rerun with either the'
+                         ' --filepath_to_raw_data or --filepath_to_processed_data options.')
+            sys.exit(-1)
         # Get a clean data frame from the data processor.
         model_trainer = ModelTrainer(data_processor.df_clean)
-        # ...
+        model_trainer.make_several_example_models()
 
