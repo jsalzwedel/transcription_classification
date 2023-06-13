@@ -19,13 +19,13 @@ if __name__ == '__main__':
                        'To get started with the data processor and/or model trainer, try one of the following example'
                        ' commands:'
                        + Fore.RESET +
-                       f'{linesep} {linesep}'
-                       'The following will command will run the data processor to clean the data and query the OpenAI'
-                       ' API for to get word embeddings for all the transcription_notes.'
+                       f'{linesep}'
+                       'The following command will run the data processor to clean the data and query the OpenAI'
+                       ' API to get word embeddings for all the transcription_notes.'
                        f'{linesep}'
                        + Fore.GREEN +
                        'python main.py --process "data/mtsamples_transcription_data.xlsx"'
-                       + Fore.RESET
+                       + Fore.RESET + f'{linesep}{linesep}'
                        )
 
     # Use RawDescriptionHelpFormatter to disable the automatic word wrapping and whitespace manipulation that argparser
@@ -35,7 +35,7 @@ if __name__ == '__main__':
                         type=str,
                         help='If you want to clean and process data, provide the relative or absolute path to the csv'
                              ' or xlsx that you want to process. E.g., data/mtsamples_transcription_data.xlsx. This'
-                             ' uses the OpenAI API (about $1.5 for the mtsamples data), and takes a few minutes, so you'
+                             ' uses the OpenAI API (about $1.5 for the mtsamples data) and takes a few minutes, so you'
                              ' may want to avoid running it more than necessary.',
                         default=None)
 
@@ -49,7 +49,7 @@ if __name__ == '__main__':
     parser.add_argument('--train_model',
                         type=bool,
                         help='Set to True if you want to train a model using the processed data. This must be used in'
-                             ' conjunction with either --filepath_to_raw_data or --filepath_to_processed_data',
+                             ' conjunction with either --filepath_to_raw_data or --filepath_to_processed_data.',
                         default=False)
 
     options = parser.parse_args()
