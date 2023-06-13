@@ -5,6 +5,7 @@ import sys
 from colorama import Fore
 from data_processor import DataProcessor
 from os import linesep
+from pathlib import Path
 from model_trainer import ModelTrainer
 
 logger = logging.getLogger()
@@ -94,6 +95,6 @@ if __name__ == '__main__':
                          ' --filepath_to_raw_data or --filepath_to_processed_data options.')
             sys.exit(-1)
         # Get a clean data frame from the data processor.
-        model_trainer = ModelTrainer(data_processor.df_clean)
+        model_trainer = ModelTrainer(data_processor.df_clean, Path('results'))
         model_trainer.make_several_example_models()
 

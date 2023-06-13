@@ -16,8 +16,8 @@ class Model:
         self.predictions = None
         self.classification_report = None
 
-    def write_report(self, output_path):
-        output_filename = Path(output_path, f'{self.name}_report.txt')
+    def write_report(self, output_path, filename_modifier=''):
+        output_filename = Path(output_path, f'{self.name}{filename_modifier}_report.txt')
         logger.info(f'Writing classification report to {output_filename}.')
         with open(output_filename, mode='a') as f:
             f.write(self.classification_report)
