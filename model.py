@@ -1,4 +1,5 @@
 import logging
+import pickle
 
 from pathlib import Path
 
@@ -16,11 +17,18 @@ class Model:
         self.classification_report = None
 
     def write_report(self, output_path):
-        output_filename = Path(output_path, f'{self.classifier.__class__.__name__}_report.txt')
-        logger.info(f'Writing classification report to {output_filename}')
+        output_filename = Path(output_path, f'{self.name}_report.txt')
+        logger.info(f'Writing classification report to {output_filename}.')
         with open(output_filename, mode='a') as f:
             f.write(self.classification_report)
+
+    def write_classifier_to_pickle(self, output_path):
+        output_filename = Path(output_path, f'{self.name}_model.pickle')
+        logger.info(f'Writing classifier model to pickle file at {output_filename}.')
+        with open(output_filename, mode='wb') as f:
+            pickle.dump(self.classifier, f)
 
     @property
     def name(self):
         return self.classifier.__class__.__name__
+
