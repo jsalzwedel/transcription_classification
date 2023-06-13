@@ -210,6 +210,7 @@ class DataProcessor:
             data_processor (DataProcessor): A data processor that contains the raw and clean data.
         """
         # Read in and clean the data
+        logger.info('Processing raw data.')
         data_processor = DataProcessor(raw_data_filepath)
         data_processor.get_embeddings_for_transcription_notes()
         data_processor.output_clean_data()
