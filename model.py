@@ -20,3 +20,7 @@ class Model:
         logger.info(f'Writing classification report to {output_filename}')
         with open(output_filename, mode='a') as f:
             f.write(self.classification_report)
+
+    @property
+    def name(self):
+        return self.classifier.__class__.__name__

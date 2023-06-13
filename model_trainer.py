@@ -1,10 +1,8 @@
-import configparser
 import logging
-import openai
 import pandas as pd
-import sys
 
 from pathlib import Path
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.svm import LinearSVC
@@ -59,7 +57,7 @@ class ModelTrainer:
         )
         return x_train, x_test, y_train, y_test
 
-    def train_a_model(self, classifier):
+    def train_a_model(self, classifier_class):
         """
 
         ... train a classifier using the default parameters. This is handy if you want to do a quick survey of multiple
@@ -67,56 +65,83 @@ class ModelTrainer:
 
         Args:
 
-            classifier:
+            classifier_class:
 
         Returns:
 
         """
         # Instantiate a Model with a new classifier.
-        model = Model(classifier())
+        model = Model(classifier_class())
+        logger.info('Training a %s model' % model.name)
         model.classifier.fit(self._x_train, self._y_train)
         model.predictions = model.classifier.predict(self._x_test)
 
         model.report = classification_report(self._y_test, model.predictions)
         model.write_report(self.path_for_results)
-        return model
+        self.models.append(model)
 
-    @staticmethod
-    def tune_linearsvc_hyperparameters(x_train, x_test, y_train, y_test):
+    def train_a_model_with_hyperparameter_tuning(self, classifier_class):
         """
 
         Args:
-            x_train:
-            x_test:
-            y_train:
-            y_test:
+            classifier_class:
 
         Returns:
 
         """
+        classifier = classifier_class()
+        logger.info('Training a %s model with hyperparameter tuning.' % classifier.__class__.__name__)
+
         # Define the parameter grid to search over
         param_grid = {
             'C': [0.1, 1, 10],  # Regularization parameter
             'loss': ['hinge', 'squared_hinge'],  # Loss function
-            'max_iter': [1000, 2000, 3000]  # Maximum number of iterations
+            'max_iter': [2000, 3000]  # Maximum number of iterations
         }
-
-        # Create the LinearSVC classifier
-        clf_svc = LinearSVC()
-
         # Perform grid search with cross-validation
-        grid_search = GridSearchCV(clf_svc, param_grid, cv=5, scoring='accuracy')
-        grid_search.fit(x_train, y_train)
+        grid_search = GridSearchCV(classifier, param_grid, cv=5, scoring='accuracy')
+        grid_search.fit(self._x_train, self._y_train)
 
         # Get the best model
-        best_model = grid_search.best_estimator_
+        model = Model(grid_search.best_estimator_)
 
         # Evaluate the best model on the test set
-        preds = best_model.predict(x_test)
-        report = classification_report(y_test, preds)
-        print(report)
-        with open('tuned_linearsvc_report.txt', mode='a') as f:
-            f.write(report)
+        model.predictions = model.classifier.predict(self._x_test)
+        model.report = classification_report(self._y_test, model.predictions)
+        model.write_report(self.path_for_results)
+        self.models.append(model)
+
+    def make_several_example_models(self):
+        """
+        Make and save several example models.
+        """
+        self.train_a_model(LinearSVC)
+        self.train_a_model(RandomForestClassifier)
+        self.train_a_model_with_hyperparameter_tuning(LinearSVC)
+        self.train_a_model_with_hyperparameter_tuning(RandomForestClassifier)
+        best_model, best_score = self.get_model_with_best_f1()
+        if best_model:
+            logger.info('The model with the highest weighted f1 score is %s with a score of %s' % (best_model.name,
+                                                                                                   best_score))
+        else:
+            logger.info('Wow. All of these models are awful. None of them have an f1 score > 0.0.')
+
+    def get_model_with_best_f1(self):
+        """
+
+        Returns:
+
+        """
+        best_model = None
+        best_f1_score = 0.0
+
+        for model in self.models:
+            weighted_avg_f1_score = model.classification_report['weighted avg']['f1-score']
+            if weighted_avg_f1_score > best_f1_score:
+                best_model = model
+                best_f1_score = weighted_avg_f1_score
+
+        return best_model, best_f1_score
 
     @property
     def df(self):
