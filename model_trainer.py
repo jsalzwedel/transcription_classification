@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 import pandas as pd
 
 from pathlib import Path
@@ -123,6 +124,8 @@ class ModelTrainer:
         if best_model:
             logger.info('The model with the highest weighted f1 score is %s with a score of %s' % (best_model.name,
                                                                                                    best_score))
+            logger.info('Writing the best model to a pickle file.')
+            best_model.write_classifier_to_pickle(self.path_for_results)
         else:
             logger.info('Wow. All of these models are awful. None of them have an f1 score > 0.0.')
 
@@ -148,8 +151,19 @@ class ModelTrainer:
         return self._df
 
     @df.setter
-    def df(self, value):
-        if isinstance(value, pd.DataFrame):
-            self._df = value
+    def df(self, df):
+        if not isinstance(df, pd.DataFrame):
+            logger.error('Attempted to set df to %s. df must be a pandas DataFrame.' % df)
+        if 'embedding' not in df.columns:
+            logger.error('This DataFrame doesn\'t have an "embedding" column. Please provide ModelTrainer a df with'
+                         ' a text embedding column called "embedding".')
+        # Make sure the embedding column is full of numpy arrays (it might be a str if we read it in from a file).
+        df['embedding'] = df['embedding'].apply(self.convert_to_array)
+        self._df = df
+
+    @staticmethod
+    def convert_to_array(value):
+        if isinstance(value, np.ndarray):
+            return value
         else:
-            logger.error('Attempted to set df to %s. df must be a pandas DataFrame.' % value)
+            return np.array(eval(value))
