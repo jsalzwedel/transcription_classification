@@ -205,12 +205,20 @@ class DataProcessor:
             logger.error(f'Attempted to set df_processed to {value}. df_processed must be a pandas DataFrame.')
 
     def output_processed_data(self):
-        # Save the clean data alongside the raw data file in case someone wants to look at it.
+        """
+        Save the clean data alongside the raw data file in case we want to read it in and use it later.
+        Note: we are saving this as csv because the embeddings are LONG. I ran into trouble with the embeddings being
+        truncated when I tried to save and read them as xlsx files.
+
+        Returns:
+            Nothing (saves df to file)
+        """
+
         directory = self._data_path.parent
         filename_stem = self._data_path.stem
-        output_path = Path(directory, f'{filename_stem}_clean.xlsx')
+        output_path = Path(directory, f'{filename_stem}_clean.csv')
         logger.info('Saving processed data to %s' % str(output_path))
-        self.df_processed.to_excel(output_path, index=False)
+        self.df_processed.to_csv(output_path, index=False)
 
     @staticmethod
     def process_data(raw_data_filepath):
