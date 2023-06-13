@@ -46,7 +46,7 @@ if __name__ == '__main__':
                        ' API to get word embeddings for all the transcription_notes.'
                        f'{linesep}'
                        + Fore.GREEN +
-                       'python main.py --filepath_to_processed_data "data/mtsamples_transcription_data_clean.xlsx"'
+                       'python main.py --filepath_to_processed_data "data/mtsamples_transcription_data_clean.csv"'
                        ' --train_model'
                        + Fore.RESET + f'{linesep}{linesep}'
                        )
@@ -58,15 +58,15 @@ if __name__ == '__main__':
                         type=str,
                         help='If you want to clean and process data, provide the relative or absolute path to the csv'
                              ' or xlsx that you want to process. E.g., data/mtsamples_transcription_data.xlsx. This'
-                             ' uses the OpenAI API (about $1.5 for the mtsamples data) and takes a few minutes, so you'
-                             ' may want to avoid running it more than necessary.',
+                             ' uses the OpenAI API (about $1.5 for the mtsamples data) and takes about 20 minutes, so'
+                             ' you may want to avoid running it more than necessary.',
                         default=None)
 
     parser.add_argument('--filepath_to_processed_data',
                         type=str,
                         help='If you want read in data that has already been cleaned and processed, provide the'
                              ' relative or absolute path to the csv or xlsx.'
-                             ' E.g., data/mtsamples_transcription_data_clean.xlsx.',
+                             ' E.g., data/mtsamples_transcription_data_clean.csv.',
                         default=None)
 
     parser.add_argument('--train_model',
