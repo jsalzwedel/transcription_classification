@@ -63,16 +63,15 @@ class ModelTrainer:
 
     def train_a_model(self, classifier_class):
         """
-
-        ... train a classifier using the default parameters. This is handy if you want to do a quick survey of multiple
-        classifiers before settling on one to tune the hyperparameters.
+        Create a Model object based around a `classifier_class` classifier. Train a classifier using the default
+        parameters. Then save the classification report (precision, recall, accuracy, and f1) to file. This is handy if
+        you want to do a quick survey of multiple classifiers before settling on one to tune the hyperparameters.
 
         Args:
-
-            classifier_class:
+            classifier_class: A sklearn classifier class, e.g., LinearSVC or RandomForestClassifier
 
         Returns:
-
+            Nothing. After creating, training, and using the model for predictions, append it to the self.models list.
         """
         # Instantiate a Model with a new classifier.
         model = Model(classifier_class())
@@ -87,13 +86,16 @@ class ModelTrainer:
 
     def train_a_model_with_hyperparameter_tuning(self, classifier_class):
         """
-        Note: right now this only accounts for the hyperparameter for LinearSVC models. Future improvements would
-        include modifying this to allow for hyperparameters for various kinds of classifiers.
+        Similar to train_a_model, but this time it does hyperparameter tuning.
+        Note: right now this only accounts for the hyperparameters for LinearSVC models. Future improvements would
+        include modifying this to allow for hyperparameters for various kinds of classifiers, perhaps by using storing
+        the parameter grid in a config file.
+
         Args:
-            classifier_class:
+            classifier_class: A sklearn classifier class, e.g., LinearSVC or RandomForestClassifier
 
         Returns:
-
+            Nothing. After creating, training, and using the model for predictions, append it to the self.models list.
         """
         classifier = classifier_class()
         logger.info('Training a %s model with hyperparameter tuning.' % classifier.__class__.__name__)
@@ -114,6 +116,7 @@ class ModelTrainer:
         # Evaluate the best model on the test set
         model.predictions = model.classifier.predict(self._x_test)
         model.classification_report_text = classification_report(self._y_test, model.predictions)
+        model.classification_report_dict = classification_report(self._y_test, model.predictions, output_dict=True)
         model.write_report(self.path_for_results, '_hyperparameter')
         self.models.append(model)
 
@@ -135,9 +138,12 @@ class ModelTrainer:
 
     def get_model_with_best_f1(self):
         """
+        Scan through all the models in the self.models list to find the model with the best weighted f1 score.
 
+        Note: Future work would change this to let the user pick which statistic to favor.
         Returns:
-
+            best_model (Model): The Model object that contains the best classifier.
+            best_f1_score (float): The f1 score of the best model.
         """
         best_model = None
         best_f1_score = 0.0
@@ -161,12 +167,23 @@ class ModelTrainer:
         if 'embedding' not in df.columns:
             logger.error('This DataFrame doesn\'t have an "embedding" column. Please provide ModelTrainer a df with'
                          ' a text embedding column called "embedding".')
-        # Make sure the embedding column is full of numpy arrays (it might be a str if we read it in from a file).
+        # Make sure the embedding column is full of numpy arrays (it might be full of strings if we read the df in from
+        # a file).
         df['embedding'] = df['embedding'].apply(self.convert_to_array)
         self._df = df
 
     @staticmethod
     def convert_to_array(value):
+        """
+        Check if a value is a numpy array. If it isn't, turn it into one.
+        Args:
+            value (np.array or str): A value that might be a numpy array in disguise.
+                E.g. the string "[0.3123, .213., 1232]"
+
+        Returns:
+            value (np.array): The value which is now definitely a numpy array.
+        """
+
         if isinstance(value, np.ndarray):
             return value
         else:
