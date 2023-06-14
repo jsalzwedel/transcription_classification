@@ -15,7 +15,10 @@ logger = logging.getLogger()
 
 class ModelTrainer:
     """
-
+    Class for handling model training. This class takes in a clean data frame that has an 'embedding' column and
+    a 'specialty' column and splits the data into train and test data sets. It can then use those data to train
+    various classifier models. It can determine which is the best one by seeing which model has the highest weighted
+    f1 score, then write that model to a pickle file.
     """
     def __init__(self, df, path_for_results=Path()):
         self.df = df.copy()
@@ -45,12 +48,12 @@ class ModelTrainer:
         """
         Create train and test sets with an 80/20 split.
         Args:
-            df:
+            df: A DataFrame containing columns `independent_var_column` and `dependent_var_column`.
             independent_var_column (str): Column name in `df` for the independent variable (x).
             dependent_var_column (str): Column name in `df` for the dependent variable (y).
 
         Returns:
-
+            x_train, x_test, y_train, y_test
         """
         # split data into train and test
         x_train, x_test, y_train, y_test = train_test_split(
@@ -77,13 +80,15 @@ class ModelTrainer:
         model.classifier.fit(self._x_train, self._y_train)
         model.predictions = model.classifier.predict(self._x_test)
 
-        model.report = classification_report(self._y_test, model.predictions)
+        model.classification_report_text = classification_report(self._y_test, model.predictions)
+        model.classification_report_dict = classification_report(self._y_test, model.predictions, output_dict=True)
         model.write_report(self.path_for_results)
         self.models.append(model)
 
     def train_a_model_with_hyperparameter_tuning(self, classifier_class):
         """
-
+        Note: right now this only accounts for the hyperparameter for LinearSVC models. Future improvements would
+        include modifying this to allow for hyperparameters for various kinds of classifiers.
         Args:
             classifier_class:
 
@@ -97,7 +102,7 @@ class ModelTrainer:
         param_grid = {
             'C': [0.1, 1, 10],  # Regularization parameter
             'loss': ['hinge', 'squared_hinge'],  # Loss function
-            'max_iter': [2000, 3000]  # Maximum number of iterations
+            'max_iter': [3000]  # Maximum number of iterations
         }
         # Perform grid search with cross-validation
         grid_search = GridSearchCV(classifier, param_grid, cv=5, scoring='accuracy')
@@ -108,8 +113,8 @@ class ModelTrainer:
 
         # Evaluate the best model on the test set
         model.predictions = model.classifier.predict(self._x_test)
-        model.report = classification_report(self._y_test, model.predictions)
-        model.write_report(self.path_for_results)
+        model.classification_report_text = classification_report(self._y_test, model.predictions)
+        model.write_report(self.path_for_results, '_hyperparameter')
         self.models.append(model)
 
     def make_several_example_models(self):
@@ -119,7 +124,6 @@ class ModelTrainer:
         self.train_a_model(LinearSVC)
         self.train_a_model(RandomForestClassifier)
         self.train_a_model_with_hyperparameter_tuning(LinearSVC)
-        self.train_a_model_with_hyperparameter_tuning(RandomForestClassifier)
         best_model, best_score = self.get_model_with_best_f1()
         if best_model:
             logger.info('The model with the highest weighted f1 score is %s with a score of %s' % (best_model.name,
@@ -139,7 +143,7 @@ class ModelTrainer:
         best_f1_score = 0.0
 
         for model in self.models:
-            weighted_avg_f1_score = model.classification_report['weighted avg']['f1-score']
+            weighted_avg_f1_score = model.classification_report_dict['weighted avg']['f1-score']
             if weighted_avg_f1_score > best_f1_score:
                 best_model = model
                 best_f1_score = weighted_avg_f1_score
