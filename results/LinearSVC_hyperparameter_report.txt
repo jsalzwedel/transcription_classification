@@ -1,0 +1,19 @@
+                               precision    recall  f1-score   support
+
+   Cardiovascular / Pulmonary       0.40      0.42      0.41        79
+   Consult - History and Phy.       0.29      0.20      0.24       111
+             Gastroenterology       0.50      0.04      0.08        45
+             General Medicine       0.50      0.05      0.08        44
+                    Neurology       0.34      0.33      0.34        33
+                   Orthopedic       0.35      0.21      0.26        62
+                        Other       0.38      0.51      0.44       259
+                    Radiology       0.27      0.09      0.14        64
+SOAP / Chart / Progress Notes       0.00      0.00      0.00        31
+                      Surgery       0.45      0.76      0.57       230
+                      Urology       0.43      0.08      0.14        36
+
+                     accuracy                           0.40       994
+                    macro avg       0.36      0.24      0.24       994
+                 weighted avg       0.38      0.40      0.35       994
+                               precision    recall  f1-score   support
+
