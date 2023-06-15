@@ -27,10 +27,6 @@ logger.addHandler(console_handler)
 
 
 if __name__ == '__main__':
-    """
-    
-    """
-    # I like to include usage examples with my argparser
     example_command = (Fore.CYAN +
                        f'**Usage**{linesep}'
                        'To get started with the data processor and/or model trainer, try one of the following example'
